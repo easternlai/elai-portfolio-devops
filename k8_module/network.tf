@@ -1,50 +1,25 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "5.32.1"
-    }
-  }
-
-  backend "s3" {
-    bucket         = "easternlai-terraform-backend"
-    key            = "backend.tfstate"
-    region         = "us-west-2"
-    encrypt        = true
-    dynamodb_table = "tf-backend"
-    profile        = "portfolio-stg"
-  }
-}
-
-provider "aws" {
-  region  = "us-west-2"
-  profile = "portfolio-stg"
-}
-
-### Network Resources
-
-#VPC
-
 resource "aws_vpc" "portfolio" {
-  cidr_block = "10.0.0.0/16"
+  cidr_block = "10.0.128.0/17"
 
   #required for k8 to work properly
   enable_dns_hostnames = true
 
   tags = {
-    Name = "Portfolio"
+    Name = "${var.env}-portfolio-${var.region}"
   }
 }
 
 #Subnet
 
 resource "aws_subnet" "portfolio" {
+  for_each                = toset(var.availability_zones)
+  availability_zone_id    = each.key
   vpc_id                  = aws_vpc.portfolio.id
-  cidr_block              = "10.0.1.0/24"
+  cidr_block              = var.subnet_cidrs[index(var.availability_zones, each.key)]
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "Portfolio"
+    Name = "${var.env}-portfolio-${each.key}"
   }
 }
 
@@ -54,7 +29,7 @@ resource "aws_internet_gateway" "portfolio" {
   vpc_id = aws_vpc.portfolio.id
 
   tags = {
-    Name = "Portfolio"
+    Name = "${var.env}-portfolio-${var.region}"
   }
 }
 
@@ -69,7 +44,7 @@ resource "aws_route_table" "portfolio" {
   }
 
   tags = {
-    Name = "Portfolio"
+    Name = "${var.env}-portfolio-${var.region}"
   }
 
 }
@@ -77,7 +52,8 @@ resource "aws_route_table" "portfolio" {
 # Route Table Association
 
 resource "aws_route_table_association" "portfolio" {
-  subnet_id      = aws_subnet.portfolio.id
+  for_each       = aws_subnet.portfolio
+  subnet_id      = each.value.id
   route_table_id = aws_route_table.portfolio.id
 }
 
@@ -85,9 +61,10 @@ resource "aws_route_table_association" "portfolio" {
 # Security Groups
 
 resource "aws_security_group" "common_ports" {
-  name = "portfolio_common"
+  vpc_id = aws_vpc.portfolio.id
+  name   = "${var.env}-portfolio-${var.region}-common"
   tags = {
-    Name = "Portfolo Common ports"
+    Name = "${var.env}-portfolio-${var.region}-common"
   }
 
   ingress {
@@ -111,7 +88,7 @@ resource "aws_security_group" "common_ports" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.ssh_ip]
   }
 
   egress {
@@ -126,9 +103,10 @@ resource "aws_security_group" "common_ports" {
 #The following ports on the next two security groups can be found in kubernetes docs: https://kubernetes.io/docs/reference/networking/ports-and-protocols/
 
 resource "aws_security_group" "k8_control_plane" {
-  name = "control_plane"
+  vpc_id = aws_vpc.portfolio.id
+  name   = "${var.env}-portfolio-${var.region}-control-plane"
   tags = {
-    Name = "Portfolo K8 control plane"
+    Name = "${var.env}-portfolio-${var.region}-control-plane"
   }
 
   ingress {
@@ -173,9 +151,10 @@ resource "aws_security_group" "k8_control_plane" {
 }
 
 resource "aws_security_group" "worker_nodes" {
-  name = "worker_nodes"
+  vpc_id = aws_vpc.portfolio.id
+  name   = "${var.env}-portfolio-${var.region}-worker"
   tags = {
-    Name = "Worker nodes"
+    Name = "${var.env}-portfolio-${var.region}-worker"
   }
 
   ingress {
@@ -194,30 +173,3 @@ resource "aws_security_group" "worker_nodes" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-
-
-# necessary for pods to communicate.
-resource "aws_security_group" "flannel" {
-  name = "flannel"
-
-  tags = {
-    Name = "flannel"
-  }
-
-  ingress {
-    description = "udp backend"
-    from_port   = 8285
-    to_port     = 8285
-    protocol    = "udp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "udp vxlan backend"
-    from_port   = 8472
-    to_port     = 8472
-    protocol    = "udp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
