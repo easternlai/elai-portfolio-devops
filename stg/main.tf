@@ -1,26 +1,24 @@
 locals {
-  env                = "stg"
-  region             = "us-west-2"
-  subnet_cidrs       = ["10.0.128.0/26", "10.0.128.64/26", "10.0.128.128/26", "10.0.128.192/26"] #Must exceed availability zones
-  availability_zones = ["usw2-az1", "usw2-az2", "usw2-az3"]                                      #Count of list will determine number of k8 worker nodes.
-  ubuntu_ami         = "ami-008fe2fc65df48dac"
-  ssh_ip             = "135.180.75.93/32" #IP address for local system
+  env    = "stg"
+  region = "us-west-2"
+
+  # The number of availability zones will determine how many subnets there are. Do not exceed 4 subnets.
+  availability_zones = ["us-west-2a", "us-west-2b"]
+  public_subnets     = ["10.0.128.0/20", "10.0.144.0/20", "10.0.160.0/20, 10.0.176.0/20"]
+  private_subnets    = ["10.0.192.0/20", "10.0.208.0/20", "10.0.224.0/20, 10.0.240.0/20"]
 
 
 }
 
 module "k8-infrastructure" {
-  source = "../k8_module"
+  source = "../terraform_module"
   env    = local.env
   region = local.region
 
   #VPC variables
-  subnet_cidrs       = local.subnet_cidrs
+  public_subnets     = local.public_subnets
+  private_subnets    = local.private_subnets
   availability_zones = local.availability_zones
-
-  #EC2 variables
-  ubuntu_ami = local.ubuntu_ami
-  ssh_ip     = local.ssh_ip
 
 }
 
