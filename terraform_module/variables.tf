@@ -26,3 +26,9 @@ variable "private_subnets" {
   type        = list(string)
   description = "List of private subnet cidrs."
 }
+
+variable "instance_type" {
+  type        = string
+  description = "Intance type for eks "
+  default     = "t2.small"
+}

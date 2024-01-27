@@ -48,7 +48,7 @@ resource "aws_eks_node_group" "portfolio" {
   }
 
   capacity_type  = "ON_DEMAND"
-  instance_types = ["t3.small"]
+  instance_types = [var.instance_type]
   depends_on = [
     aws_iam_role_policy_attachment.ng-AmazonEKSWorkerNodePolicy,
     aws_iam_role_policy_attachment.ng-AmazonEKS_CNI_Policy,

@@ -7,6 +7,8 @@ locals {
   public_subnets     = ["10.0.128.0/20", "10.0.144.0/20", "10.0.160.0/20, 10.0.176.0/20"]
   private_subnets    = ["10.0.192.0/20", "10.0.208.0/20", "10.0.224.0/20, 10.0.240.0/20"]
 
+  # instance type for nodes
+  instance_type = "t2.micro"
 
 }
 
@@ -19,6 +21,6 @@ module "k8-infrastructure" {
   public_subnets     = local.public_subnets
   private_subnets    = local.private_subnets
   availability_zones = local.availability_zones
-
+  instance_type      = local.instance_type
 }
 
