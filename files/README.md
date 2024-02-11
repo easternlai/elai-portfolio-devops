@@ -1,4 +1,4 @@
-# This folder was used for testing of deploying bare metal kubernetes on AWS. Retiring this effort as there was too many inherent issues with running MetalLb on AWS but retaining a copy for future reference.
+This folder was used for testing of deploying bare metal kubernetes on AWS. Retiring this effort as there was too many inherent issues with running MetalLb on AWS but retaining a copy for future reference.
 
 # Below are the notes for the effort
 

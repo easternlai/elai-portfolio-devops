@@ -21,9 +21,9 @@ resource "aws_subnet" "private" {
   cidr_block        = var.private_subnets[index(var.availability_zones, each.key)]
 
   tags = {
-    Name                                                    = "${local.name}-private"
-    "kubernetes.io/role/internal-elb"                       = 1
-    "kubernetes.io/cluster/stg-portfolio-us-west-2-cluster" = "shared"
+    Name                                                        = "${local.name}-private"
+    "kubernetes.io/role/internal-elb"                           = 1
+    "kubernetes.io/cluster/stg-portfolio-${var.region}-cluster" = "shared"
   }
 }
 
@@ -35,9 +35,9 @@ resource "aws_subnet" "public" {
   # map_public_ip_on_launch = true
 
   tags = {
-    Name                                                    = "${local.name}-public"
-    "kubernetes.io/role/elb"                                = 1
-    "kubernetes.io/cluster/stg-portfolio-us-west-2-cluster" = "shared"
+    Name                                                        = "${local.name}-public"
+    "kubernetes.io/role/elb"                                    = 1
+    "kubernetes.io/cluster/stg-portfolio-${var.region}-cluster" = "shared"
 
   }
 }

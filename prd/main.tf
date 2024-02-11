@@ -1,14 +1,14 @@
 locals {
-  env    = "stg"
-  region = "us-west-2"
+  env    = "prd"
+  region = "us-west-1"
 
   # The number of availability zones will determine how many subnets there are. Do not exceed 4 subnets.
-  availability_zones = ["us-west-2a", "us-west-2b"]
-  public_subnets     = ["10.0.128.0/20", "10.0.144.0/20", "10.0.160.0/20, 10.0.176.0/20"]
-  private_subnets    = ["10.0.192.0/20", "10.0.208.0/20", "10.0.224.0/20, 10.0.240.0/20"]
+  availability_zones = ["us-west-1a", "us-west-1b"]
+  public_subnets     = ["10.0.0.0/20", "10.0.16.0/20", "10.0.32.0/20, 10.0.48.0/20"]
+  private_subnets    = ["10.0.64.0/20", "10.0.80.0/20", "10.0.96.0/20, 10.0.112.0/20"]
 
   # instance type for nodes
-  instance_type = "t2.medium"
+  instance_type = "t3.medium"
 
 }
 
